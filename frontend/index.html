@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SnapLoad : téléchargez gratuitement vos vidéos TikTok, YouTube, Instagram et plus, en HD et sans filigrane.">
+  <meta name="theme-color" content="#0a0a0f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+
+  <title>SnapLoad — Téléchargeur de vidéos universel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="toast-container" id="toasts"></div>
+
+  <!-- ══ NAVIGATION ══ -->
+  <nav id="navbar">
+    <a class="nav-logo" href="#accueil">
+      <div class="nav-logo-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/>
+        </svg>
+      </div>
+      <span class="nav-logo-text">SnapLoad</span>
+    </a>
+
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#accueil" class="nav-link">Accueil</a></li>
+      <li><a href="#comment" class="nav-link">Comment ça marche</a></li>
+      <li><a href="#apropos" class="nav-link">À propos</a></li>
+      <li><a href="#faq"     class="nav-link">FAQ</a></li>
+      <li><a href="#contact" class="nav-link">Contact</a></li>
+    </ul>
+
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="theme-toggle">
+        <button class="theme-toggle-btn active" id="darkBtn" onclick="setTheme(true)" aria-label="Thème sombre">🌙</button>
+        <button class="theme-toggle-btn"        id="lightBtn" onclick="setTheme(false)" aria-label="Thème clair">☀️</button>
+      </div>
+      <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════
+       1. ACCUEIL / HERO
+  ══════════════════════════ -->
+  <section id="accueil" class="hero-section">
+    <div class="hero-wrapper">
+
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Gratuit · Sans pub · Sans filigrane
+      </div>
+
+      <h1 class="hero-title">
+        Téléchargez tout,
+        <span class="line2">n'importe où.</span>
+      </h1>
+
+      <p class="hero-sub">
+        Collez un lien depuis TikTok, YouTube, Instagram ou 20+ plateformes.
+        Obtenez votre vidéo en HD en quelques secondes.
+      </p>
+
+      <div class="input-area">
+
+        <div class="api-banner" id="apiBanner">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Mode démo — Configurez <code>API_URL</code> dans <strong>js/main.js</strong> ligne 8.</span>
+        </div>
+
+        <div class="input-wrapper">
+          <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+          <input type="url" id="url-input" aria-label="Lien de la vidéo"
+            placeholder="Coller le lien ici… (TikTok, YouTube, Instagram…)"
+            autocomplete="off" spellcheck="false"
+            onkeydown="if(event.key==='Enter') analyzeUrl()"/>
+          <button class="paste-btn" onclick="pasteFromClipboard()">📋 Coller</button>
+          <button class="download-btn" id="downloadBtn" onclick="analyzeUrl()">
+            <div class="spinner" id="spinner"></div>
+            <span class="btn-text">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:6px">
+                <path d="M12 15V3m0 12l-4-4m4 4l4-4"/>
+                <path d="M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/>
+              </svg>
+              Télécharger
+            </span>
+          </button>
+        </div>
+
+        <div class="msg" id="errorMsg" role="alert" aria-live="polite"></div>
+
+        <div id="results-panel">
+          <div class="result-card">
+            <div class="result-header">
+              <div class="result-thumbnail" id="resultThumb">
+                <div class="thumb-placeholder">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/></svg>
+                </div>
+              </div>
+              <div class="result-meta">
+                <div class="result-platform" id="resultPlatform">—</div>
+                <div class="result-title"    id="resultTitle">Chargement…</div>
+                <div class="result-duration" id="resultDuration"></div>
+              </div>
+            </div>
+            <div class="quality-section">
+              <div class="quality-label">Choisir la qualité</div>
+              <div class="quality-grid" id="qualityGrid"></div>
+              <div class="dl-progress" id="dlProgress">
+                <div class="dl-progress-bar-wrap"><div class="dl-progress-bar" id="dlBar"></div></div>
+                <div class="dl-progress-text" id="dlText">Préparation…</div>
+              </div>
+            </div>
+            <div class="audio-row">
+              <div class="audio-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                Audio MP3 uniquement
+              </div>
+              <button class="audio-dl-btn" onclick="downloadAudio()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 15V3m0 12l-4-4m4 4l4-4"/></svg>
+                Télécharger MP3
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="platforms">
+        <div class="platform-pill"><span class="dot" style="background:#ff0050"></span>TikTok</div>
+        <div class="platform-pill"><span class="dot" style="background:#ff0000"></span>YouTube</div>
+        <div class="platform-pill"><span class="dot" style="background:#e1306c"></span>Instagram</div>
+        <div class="platform-pill"><span class="dot" style="background:#1877f2"></span>Facebook</div>
+        <div class="platform-pill"><span class="dot" style="background:#1da1f2"></span>Twitter / X</div>
+        <div class="platform-pill"><span class="dot" style="background:#ff4500"></span>Reddit</div>
+        <div class="platform-pill"><span class="dot" style="background:#6441a5"></span>Twitch</div>
+        <div class="platform-pill"><span class="dot" style="background:#ff6900"></span>Vimeo</div>
+      </div>
+
+      <div class="history-section" id="historySection">
+        <div class="history-label">
+          Historique récent
+          <button class="history-clear" onclick="clearHistory()">Effacer</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════
+       2. COMMENT ÇA MARCHE
+  ══════════════════════════ -->
+  <section id="comment" class="section-padded">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-tag">Mode d'emploi</div>
+        <h2 class="section-title">3 étapes, c'est tout</h2>
+        <p class="section-sub">Pas de compte, pas d'installation. Juste coller et télécharger.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <div class="step-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </div>
+          <div class="step-title">Copiez le lien</div>
+          <div class="step-desc">Ouvrez TikTok, YouTube ou Instagram et copiez l'URL de la vidéo depuis votre navigateur ou l'app.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <div class="step-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </div>
+          <div class="step-title">Collez et analysez</div>
+          <div class="step-desc">Collez le lien dans le champ et cliquez sur Télécharger. L'analyse prend moins de 2 secondes.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <div class="step-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
+          </div>
+          <div class="step-title">Choisissez la qualité</div>
+          <div class="step-desc">Sélectionnez HD, Full HD ou 4K et téléchargez votre vidéo sans filigrane.</div>
+        </div>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          <div class="feature-name">Ultra-rapide</div>
+          <div class="feature-desc">Analyse et préparation en moins de 2 secondes.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="feature-name">Sans filigrane</div>
+          <div class="feature-desc">Vidéos propres, sans logo ni watermark.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+          <div class="feature-name">Haute qualité</div>
+          <div class="feature-desc">HD, Full HD, 4K selon la disponibilité.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+          <div class="feature-name">Export MP3</div>
+          <div class="feature-desc">Extrayez l'audio en MP3 depuis n'importe quelle vidéo.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+          <div class="feature-name">Historique local</div>
+          <div class="feature-desc">Retrouvez vos téléchargements récents.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div class="feature-name">Confidentialité</div>
+          <div class="feature-desc">Aucun lien ni vidéo stocké sur nos serveurs.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════
+       3. À PROPOS
+  ══════════════════════════ -->
+  <section id="apropos" class="section-padded section-alt">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-tag">À propos</div>
+        <h2 class="section-title">Notre mission</h2>
+        <p class="section-sub">Rendre le téléchargement de vidéos simple, rapide et accessible à tous.</p>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-card">
+          <h3 class="about-card-title">Qui sommes-nous ?</h3>
+          <p class="about-card-text">SnapLoad est un outil web gratuit conçu pour permettre à chacun de sauvegarder facilement des vidéos depuis ses plateformes préférées.</p>
+          <p class="about-card-text">Nous ne stockons aucune donnée personnelle, aucun lien, aucune vidéo sur nos serveurs. Votre historique reste uniquement sur votre appareil.</p>
+        </div>
+        <div class="about-card">
+          <h3 class="about-card-title">Nos engagements</h3>
+          <ul class="about-list">
+            <li><span class="about-check">✓</span><div><strong>100% gratuit</strong> — Aucune inscription, aucun abonnement</div></li>
+            <li><span class="about-check">✓</span><div><strong>Sans pub</strong> — Pas de pop-ups ni de redirections</div></li>
+            <li><span class="about-check">✓</span><div><strong>Vie privée</strong> — Zéro donnée stockée côté serveur</div></li>
+            <li><span class="about-check">✓</span><div><strong>Transparent</strong> — Code documenté et clair</div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="disclaimer-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" style="flex-shrink:0;margin-top:2px">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <p><strong style="color:#f43f5e">Avertissement légal :</strong> Le téléchargement de contenus protégés par le droit d'auteur sans autorisation est illégal dans de nombreux pays. Assurez-vous d'avoir le droit de télécharger une vidéo avant de le faire. SnapLoad décline toute responsabilité.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════
+       4. FAQ
+  ══════════════════════════ -->
+  <section id="faq" class="section-padded">
+    <div class="section-inner section-narrow">
+      <div class="section-header">
+        <div class="section-tag">FAQ</div>
+        <h2 class="section-title">Questions fréquentes</h2>
+        <p class="section-sub">Tout ce que vous devez savoir sur SnapLoad.</p>
+      </div>
+      <div id="faqList" class="faq-list"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════
+       5. CONTACT
+  ══════════════════════════ -->
+  <section id="contact" class="section-padded section-alt">
+    <div class="section-inner section-narrow">
+      <div class="section-header">
+        <div class="section-tag">Contact</div>
+        <h2 class="section-title">Nous écrire</h2>
+        <p class="section-sub">Un bug, une suggestion ? Écrivez-nous.</p>
+      </div>
+
+      <form class="contact-form" id="contactForm" name="contact" method="POST" action="/" data-netlify="true" netlify-honeypot="bot-field" onsubmit="submitContact(event)">
+        <input type="hidden" name="form-name" value="contact">
+        <p hidden>
+          <label>Ne pas remplir : <input name="bot-field"></label>
+        </p>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="contactName">Nom</label>
+            <input type="text" class="form-control" id="contactName" name="name" placeholder="Votre nom" maxlength="120" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="contactEmail">Email</label>
+            <input type="email" class="form-control" id="contactEmail" name="email" placeholder="votre@email.com" maxlength="254" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="contactSubject">Sujet</label>
+          <select class="form-control" id="contactSubject" name="subject">
+            <option value="">Choisir un sujet…</option>
+            <option>Signaler un bug</option>
+            <option>Demande de fonctionnalité</option>
+            <option>Problème de téléchargement</option>
+            <option>Question générale</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="contactMsg">Message</label>
+          <textarea class="form-control" id="contactMsg" name="message" rows="5" maxlength="5000" placeholder="Décrivez votre demande…" required></textarea>
+        </div>
+        <button class="submit-btn" type="submit">
+          Envoyer le message
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ══ FOOTER ══ -->
+  <footer>
+    <div class="footer-left">
+      <div class="footer-logo-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
+      </div>
+      <span class="footer-brand">SnapLoad</span>
+      <span class="footer-copy">© 2026 — Gratuit, sans pub</span>
+    </div>
+    <div class="footer-links">
+      <a href="#accueil">Accueil</a>
+      <a href="#comment">Comment ça marche</a>
+      <a href="#apropos">À propos</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
