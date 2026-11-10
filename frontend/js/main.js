@@ -159,6 +159,7 @@ let currentUrl      = '';
 let currentPlatform = null;
 let currentMethod   = 'demo';
 let currentQualities = [];
+let selectedQuality = null;
 
 // ══════════════════════════════════════════
 // APPEL AU BACKEND RÉEL
@@ -259,9 +260,11 @@ async function analyzeUrl() {
   // Préparer l'interface
   currentUrl      = url;
   currentPlatform = platform;
+  selectedQuality = null;
   hideError();
   setLoading(true);
   document.getElementById('results-panel').classList.remove('visible');
+  document.getElementById('selectedDownloadBtn').hidden = true;
 
   try {
     let data;
@@ -322,6 +325,8 @@ function renderResults(platform, data) {
   // Boutons de qualité
   const grid = document.getElementById('qualityGrid');
   grid.innerHTML = '';
+  selectedQuality = null;
+  document.getElementById('selectedDownloadBtn').hidden = true;
   if (!currentQualities || !currentQualities.length) {
     grid.innerHTML = '<div class="quality-info">Aucune qualité disponible pour cette vidéo.</div>';
   }
@@ -336,27 +341,52 @@ function renderResults(platform, data) {
       <span class="quality-info">${escapeHtml(info)}</span>
       ${q.recommended ? '<br><span class="rec-badge">Recommandé</span>' : ''}
     `;
-    btn.onclick = () => startDownload(q);
+    btn.setAttribute('aria-pressed', 'false');
+    btn.onclick = () => selectQuality(q, btn);
     grid.appendChild(btn);
   });
 
   document.getElementById('results-panel').classList.add('visible');
 }
 
+function selectQuality(quality, button) {
+  selectedQuality = quality;
+  document.querySelectorAll('.quality-btn').forEach(item => {
+    const selected = item === button;
+    item.classList.toggle('selected', selected);
+    item.setAttribute('aria-pressed', String(selected));
+  });
+
+  const downloadButton = document.getElementById('selectedDownloadBtn');
+  const label = quality.label || quality.quality || 'choisie';
+  downloadButton.querySelector('.selected-download-label').textContent = `Télécharger ${label}`;
+  downloadButton.hidden = false;
+}
+
+function downloadSelectedQuality() {
+  if (selectedQuality) startDownload(selectedQuality);
+}
+
 // ══════════════════════════════════════════
 // TÉLÉCHARGER UNE QUALITÉ
 // ══════════════════════════════════════════
+let filenameSequence = 0;
+
 function getFilename(label) {
-  // Génère un nom de fichier propre depuis le titre de la vidéo
-  const titre = document.getElementById('resultTitle').textContent.trim();
-  const platform = currentPlatform ? currentPlatform.name.toLowerCase() : 'video';
-  const clean = titre
-    .substring(0, 50)
-    .replace(/[^\w\s-]/g, '')   // Supprimer les caractères spéciaux
+  const cleanPart = value => value.normalize('NFKD')
+    .replace(/\p{M}/gu, '')
+    .replace(/[^\p{L}\p{N}\s_-]/gu, '')
     .trim()
-    .replace(/\s+/g, '_')        // Espaces → underscores
-    .toLowerCase() || 'video';
-  return `${platform}_${clean}_${label}.mp4`;
+    .replace(/[\s_-]+/g, '_')
+    .toLowerCase();
+  const title = cleanPart(document.getElementById('resultTitle').textContent).slice(0, 60) || 'video';
+  const platform = cleanPart(currentPlatform ? currentPlatform.name : 'video') || 'video';
+  const quality = cleanPart(String(label)) || 'hd';
+  const now = new Date();
+  const date = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+  const time = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+  const timestamp = `${date}-${time}-${String(now.getMilliseconds()).padStart(3, '0')}-${String(++filenameSequence).padStart(2, '0')}`;
+  return `${platform}_${title}_${quality}_${timestamp}.mp4`;
 }
 
 let isDownloading = false;
@@ -367,14 +397,17 @@ function startDownload(quality) {
   const progress = document.getElementById('dlProgress');
   const bar      = document.getElementById('dlBar');
   const text     = document.getElementById('dlText');
+  const downloadButton = document.getElementById('selectedDownloadBtn');
 
   const reset = () => {
     isDownloading = false;
     progress.classList.remove('active');
     bar.style.width = '0%';
+    downloadButton.disabled = false;
   };
 
   isDownloading = true;
+  downloadButton.disabled = true;
   hideError();
   progress.classList.add('active');
 
@@ -479,15 +512,26 @@ function downloadAudio() {
 // COLLER DEPUIS LE PRESSE-PAPIERS
 // ══════════════════════════════════════════
 async function pasteFromClipboard() {
+  const input = document.getElementById('url-input');
   try {
-    const text = await navigator.clipboard.readText();
+    if (!window.isSecureContext || !navigator.clipboard?.readText) throw new Error('Presse-papiers indisponible');
+    const text = (await navigator.clipboard.readText()).trim();
     if (text) {
-      document.getElementById('url-input').value = text;
+      input.value = text;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
       showToast('📋 Lien collé !', 'success');
+      return;
     }
   } catch {
-    showToast('Collez le lien manuellement avec Ctrl+V', 'error');
+    input.focus();
+    input.select();
+    showToast('Touchez longuement le champ puis choisissez « Coller ».', 'error');
+    return;
   }
+
+  input.focus();
+  input.select();
+  showToast('Aucun texte copié. Touchez longuement le champ puis choisissez « Coller ».', 'error');
 }
 
 // ══════════════════════════════════════════

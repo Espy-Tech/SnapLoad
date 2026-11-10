@@ -555,6 +555,12 @@ body.light .msg.error { color: #be123c; }
   background: var(--green-glow);
 }
 
+.quality-btn.selected {
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.14);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
 .quality-badge {
   display: block;
   font-size: 1rem;
@@ -578,6 +584,29 @@ body.light .msg.error { color: #be123c; }
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 500;
 }
+
+.selected-download-btn {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 0 12px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font: 600 0.95rem 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  transition: var(--transition);
+}
+
+.selected-download-btn[hidden] { display: none; }
+.selected-download-btn:hover:not(:disabled) { background: var(--accent2); }
+.selected-download-btn:disabled { cursor: wait; opacity: 0.7; }
 
 /* ── BARRE DE PROGRESSION ── */
 .dl-progress { margin-top: 8px; display: none; }
